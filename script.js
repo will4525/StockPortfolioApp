@@ -1,7 +1,6 @@
 class Portfolio extends React.Component {
     constructor(props) {
         super(props);
-        // Initialize state here (only once!)
         this.state = {
             portfolio: [
                 {
@@ -24,10 +23,29 @@ class Portfolio extends React.Component {
                 }
             ]
         };
+
+    }
+
+    handleChange(event, index) {
+        const portfolio = this.state.portfolio.slice(); // shallow copy
+        const { name, value } = event.target;
+        portfolio[index][name] = value;
+        this.setState({ portfolio });
+    }
+
+
+    removeStock(index) {
+        const portfolio = this.state.portfolio.slice(); // shallow copy
+        portfolio.splice(index, 1); // remove value at index
+        this.setState({ portfolio });
     }
 
     render() {
         const { portfolio } = this.state;
+
+        const portfolio_market_value = portfolio.reduce((sum, stock) => stock.shares_owned * stock.market_price + sum, 0);
+        const portfolio_cost = portfolio.reduce((sum, stock) => stock.shares_owned * stock.cost_per_share + sum, 0);
+        const portfolio_gain_loss = portfolio_market_value - portfolio_cost;
 
         return (
             <div className="container">
@@ -55,32 +73,46 @@ class Portfolio extends React.Component {
                                         market_price
                                     } = stock;
 
-                                    // Calculate derived values
                                     const market_value = shares_owned * market_price;
-                                    const cost_value = shares_owned * cost_per_share;
-                                    const unrealized_gain = market_value - cost_value;
+                                    const unrealized_gain_loss = market_value - shares_owned * cost_per_share;
 
                                     return (
                                         <tr key={index}>
                                             <td>{name}</td>
                                             <td>
-                                                <input type="number" name="shares_owned" value={shares_owned} readOnly />
+                                                <input
+                                                    type="number"
+                                                    name="shares_owned"
+                                                    value={shares_owned}
+                                                    readOnly
+                                                />
                                             </td>
                                             <td>
-                                                <input type="number" name="cost_per_share" value={cost_per_share} readOnly />
+                                                <input
+                                                    type="number"
+                                                    name="cost_per_share"
+                                                    value={cost_per_share}
+                                                    readOnly
+                                                />
                                             </td>
                                             <td>
-                                                <input type="number" name="market_price" value={market_price} readOnly />
+                                                <input
+                                                    type="number"
+                                                    name="market_price"
+                                                    value={market_price}
+                                                    readOnly
+                                                />
                                             </td>
                                             <td>${market_value.toFixed(2)}</td>
                                             <td
-                                                style={{ color: unrealized_gain >= 0 ? 'green' : 'red' }}
+                                                style={{ color: unrealized_gain_loss >= 0 ? 'green' : 'red' }}
                                             >
-                                                ${unrealized_gain.toFixed(2)}
+                                                ${unrealized_gain_loss.toFixed(2)}
                                             </td>
                                             <td>
                                                 <button className="btn btn-light btn-sm">remove</button>
                                             </td>
+
                                         </tr>
                                     );
                                 })}
